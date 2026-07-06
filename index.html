@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!--
+  Ruth Dodd — personal website
+  ---------------------------------
+  This whole site is ONE file. It has three ingredients (the vocab from day one):
+    • HTML  = the structure / building blocks   (the tags below, like <nav>, <header>)
+    • CSS   = the styling / color / layout       (everything inside the <style> block)
+    • JS    = things that happen when you click  (the small <script> block at the bottom)
+  The big labelled sections below (NAV BAR, BANNER, ABOUT...) are the "parts of a website."
+  Edit the text between the tags to make it yours. Nothing here is permanent.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ruth Dodd</title>
+
+  <style>
+    /* ---------- CSS: colors & fonts we reuse everywhere ---------- */
+    :root {
+      --ink:      #10233b;   /* near-black blue for text */
+      --ub-blue:  #005bbb;   /* University at Buffalo blue */
+      --teal:     #12a4a4;   /* accent */
+      --paper:    #f7f9fc;   /* page background */
+      --card:     #ffffff;   /* card background */
+      --muted:    #5a6b80;   /* soft grey text */
+      --line:     #e3e9f2;   /* hairline borders */
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.6;
+    }
+
+    a { color: var(--ub-blue); }
+
+    /* ---------- NAV BAR ---------- */
+    nav {
+      position: sticky;        /* stays pinned to the top as you scroll */
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1.5rem;
+      background: rgba(247, 249, 252, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav .brand { font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
+    nav .links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    nav .links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    nav .links a:hover { color: var(--ub-blue); }
+
+    /* ---------- BANNER / HEADER (the big image-y strip up top) ---------- */
+    header {
+      background: linear-gradient(135deg, var(--ub-blue) 0%, var(--teal) 100%);
+      color: #fff;
+      padding: 3.5rem 1.5rem;
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    /* The round headshot. Right now it's a placeholder with your initials.
+       To use a real photo: save it in this folder as  headshot.jpg
+       then delete the <svg>...</svg> below and use instead:
+       <img class="avatar" src="headshot.jpg" alt="Ruth Dodd" />  */
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.8);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+      object-fit: cover;
+      object-position: center 15%;
+      background: #0a3d73;
+    }
+    .header-text h1 { margin: 0 0 0.35rem; font-size: 2.4rem; }
+    .header-text .tagline { margin: 0 0 0.9rem; font-size: 1.15rem; opacity: 0.95; }
+    .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+
+    /* ---------- shared layout for the content sections ---------- */
+    main { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; }
+    section { margin-bottom: 3rem; }
+    section h2 {
+      font-size: 1.5rem;
+      margin: 0 0 1rem;
+      display: inline-block;
+      border-bottom: 3px solid var(--teal);
+      padding-bottom: 0.25rem;
+    }
+    section p { color: #33445c; }
+
+    /* ---------- VALUE BOXES / CARDS (the interest tiles) ---------- */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1.25rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(16,35,59,0.08); }
+    .card .icon { font-size: 1.6rem; }
+    .card h3 { margin: 0.5rem 0 0.35rem; font-size: 1.1rem; }
+    .card p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+
+    /* word-chips for the "how I like to work" adjectives */
+    .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .chip {
+      background: #eaf2fb;
+      color: var(--ub-blue);
+      border: 1px solid #cfe0f5;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    footer a { margin: 0 0.5rem; }
+
+    /* ---------- PHONE-SIZED SCREENS: tidy things up on narrow widths ---------- */
+    @media (max-width: 560px) {
+      nav { padding: 0.75rem 1rem; }
+      nav .links { gap: 0.9rem; }
+      nav .links a { font-size: 0.9rem; }
+      header { padding: 2.5rem 1.25rem; }
+      .header-inner { justify-content: center; text-align: center; }
+      .badges { justify-content: center; }
+      .header-text h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================== NAV BAR ===================== -->
+  <nav>
+    <span class="brand">Ruth Dodd</span>
+    <span class="links">
+      <a href="#about">About</a>
+      <a href="#interests">Interests</a>
+      <a href="#skills">How I Work</a>
+      <a href="#contact">Contact</a>
+    </span>
+  </nav>
+
+  <!-- ===================== BANNER / HEADER ===================== -->
+  <header>
+    <div class="header-inner">
+      <img class="avatar" src="headshot.jpg" alt="Ruth Dodd" />
+      <div class="header-text">
+        <h1>Ruth Dodd</h1>
+        <p class="tagline">Incoming freshman studying engineering &amp; design — curious about how the built environment works.</p>
+        <div class="badges">
+          <span class="badge">University at Buffalo</span>
+          <span class="badge">Honors College</span>
+          <span class="badge">Class of 2030</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================== ABOUT ===================== -->
+    <section id="about">
+      <h2>About</h2>
+      <p>
+        Hi! I'm Ruth, an incoming freshman in the Honors College at the University at Buffalo.
+        I'm drawn to the technical, hands-on side of things — architecture and engineering — and
+        I'm especially curious about <strong>environmental engineering</strong>: designing the
+        systems and structures that let communities and the natural world share space well.
+        This page is a work in progress, and so am I.
+      </p>
+    </section>
+
+    <!-- ===================== INTERESTS (value boxes) ===================== -->
+    <section id="interests">
+      <h2>What I'm Into</h2>
+      <div class="cards">
+        <div class="card">
+          <div class="icon">🏛️</div>
+          <h3>Architecture</h3>
+          <p>How buildings and spaces are designed — the meeting point of art, structure, and how people actually live.</p>
+        </div>
+        <div class="card">
+          <div class="icon">⚙️</div>
+          <h3>Engineering</h3>
+          <p>The technical, problem-solving side: figuring out how things are built and how to make them work better.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🌱</div>
+          <h3>Environmental Engineering</h3>
+          <p>An emerging interest — designing infrastructure with the environment in mind. Water, sustainability, resilient systems.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW I WORK (adjectives Ruth was unsure about) ===================== -->
+    <section id="skills">
+      <h2>How I Like to Work</h2>
+      <p>
+        Still figuring out the exact labels — but these feel right for someone who likes to make
+        real things and understand how they fit together. <em>(Easy to swap: pick the words that sound like you.)</em>
+      </p>
+      <div class="chips">
+        <span class="chip">Builder</span>
+        <span class="chip">Designer</span>
+        <span class="chip">Problem-solver</span>
+        <span class="chip">Systems thinker</span>
+        <span class="chip">Hands-on learner</span>
+        <span class="chip">Detail-oriented</span>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section id="contact">
+      <h2>Get in Touch</h2>
+      <p>
+        This site lives on GitHub Pages, and I'm learning to build it myself — so expect it to grow.
+        You can find me on GitHub below.
+      </p>
+      <p>
+        💻 <a href="https://github.com/ruthdodd" target="_blank" rel="noopener">github.com/ruthdodd</a>
+      </p>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer>
+    <div>
+      <a href="https://github.com/ruthdodd" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p>© 2026 Ruth Dodd · Built with a little help from Claude, hosted on GitHub Pages.</p>
+  </footer>
+
+  <!-- ===================== JAVASCRIPT ===================== -->
+  <!-- No JavaScript needed yet. If you ever want something to "happen when you
+       click," this is where the code would go (inside a <script> tag). -->
+
+</body>
+</html>
