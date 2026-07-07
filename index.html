@@ -151,6 +151,115 @@
     }
     footer a { margin: 0 0.5rem; }
 
+    /* ---------- TOUR GUIDE: the little robot that hangs out in the corner ---------- */
+    .tour-fab {
+      position: fixed;         /* "fixed" = stays put in the viewport, even while the page scrolls */
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--ub-blue) 0%, var(--teal) 100%);
+      color: #fff;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(16,35,59,0.25);
+      transition: transform 0.15s ease;
+    }
+    .tour-fab:hover { transform: scale(1.08); }
+    .tour-fab:active { transform: scale(0.96); }
+
+    /* little pulsing ring so first-time visitors notice it */
+    .tour-fab.pulse::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(18,164,164,0.6);
+      animation: tour-pulse 2s ease-out infinite;
+    }
+    @keyframes tour-pulse {
+      to { box-shadow: 0 0 0 16px rgba(18,164,164,0); }
+    }
+
+    /* dim backdrop behind the highlighted section */
+    .tour-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(16,35,59,0.55);
+      z-index: 90;
+    }
+
+    /* the highlighted section gets lifted above the backdrop with a glowing ring.
+       The box-shadow is a paper-colored "padding ring" so text isn't cramped
+       against the edge, then the teal outline sits just outside that. */
+    .tour-highlight {
+      position: relative;
+      z-index: 95;
+      border-radius: 14px;
+      outline: 3px solid var(--teal);
+      outline-offset: 14px;
+      box-shadow: 0 0 0 14px var(--paper);
+    }
+    /* Transparent areas (nav, the content sections) need an opaque fill so the
+       dark backdrop behind them doesn't bleed through and dim their text.
+       The banner is deliberately left out — it keeps its own blue gradient and
+       white text, which stays readable. */
+    nav.tour-highlight,
+    section.tour-highlight {
+      background: var(--paper);
+    }
+
+    /* the little card explaining the current step */
+    .tour-card {
+      position: fixed;
+      z-index: 100;
+      bottom: 96px;
+      right: 24px;
+      width: min(320px, calc(100vw - 48px));
+      background: var(--card);
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 16px 40px rgba(16,35,59,0.3);
+      border: 1px solid var(--line);
+    }
+    .tour-card .tour-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+    }
+    .tour-card h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+    .tour-card p { margin: 0 0 1rem; font-size: 0.9rem; color: var(--muted); }
+    .tour-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .tour-dots { display: flex; gap: 0.35rem; }
+    .tour-dots span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--line);
+    }
+    .tour-dots span.active { background: var(--teal); }
+    .tour-buttons { display: flex; gap: 0.5rem; }
+    .tour-buttons button {
+      cursor: pointer;
+      border: none;
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .tour-buttons .tour-skip { background: transparent; color: var(--muted); }
+    .tour-buttons .tour-next { background: var(--ub-blue); color: #fff; }
+
     /* ---------- PHONE-SIZED SCREENS: tidy things up on narrow widths ---------- */
     @media (max-width: 560px) {
       nav { padding: 0.75rem 1rem; }
@@ -266,9 +375,108 @@
     <p>© 2026 Ruth Dodd · Built with a little help from Claude, hosted on GitHub Pages.</p>
   </footer>
 
+  <!-- ===================== TOUR GUIDE BUTTON ===================== -->
+  <!-- The little robot that hangs out in the lower-right corner. Fixed position
+       (see CSS) means it stays put on screen even while the page scrolls.
+       Click it any time to replay the walkthrough. -->
+  <button class="tour-fab pulse" id="tourFab" aria-label="Replay site walkthrough" title="Take a tour">🤖</button>
+
   <!-- ===================== JAVASCRIPT ===================== -->
-  <!-- No JavaScript needed yet. If you ever want something to "happen when you
-       click," this is where the code would go (inside a <script> tag). -->
+  <!-- This is the "things happen when you click" part. It builds a short,
+       replayable walkthrough that highlights one section at a time. -->
+  <script>
+    const tourSteps = [
+      { selector: 'nav',              title: 'Welcome! 👋',        text: "This is the nav bar — quick links to jump to any section on the page." },
+      { selector: 'header',           title: 'The banner',        text: 'Name, photo, and a few quick badges about who I am.' },
+      { selector: '#about',           title: 'About',             text: "A short bio — who I am and what I'm curious about." },
+      { selector: '#interests',       title: "What I'm Into",     text: 'Value boxes for the topics I care about most.' },
+      { selector: '#skills',          title: 'How I Like to Work', text: 'A few words that describe how I approach projects.' },
+      { selector: '#contact',         title: 'Get in Touch',       text: 'Where to find me if you want to connect.' },
+    ];
+
+    let tourIndex = 0;
+    let backdropEl = null;
+    let cardEl = null;
+    let highlightedEl = null;
+
+    function clearHighlight() {
+      if (highlightedEl) {
+        highlightedEl.classList.remove('tour-highlight');
+        highlightedEl = null;
+      }
+    }
+
+    function endTour() {
+      clearHighlight();
+      if (backdropEl) { backdropEl.remove(); backdropEl = null; }
+      if (cardEl) { cardEl.remove(); cardEl = null; }
+      document.getElementById('tourFab').classList.remove('pulse');
+      localStorage.setItem('tourSeen', 'true');
+    }
+
+    function renderStep() {
+      clearHighlight();
+      const step = tourSteps[tourIndex];
+      const target = document.querySelector(step.selector);
+      if (target) {
+        target.classList.add('tour-highlight');
+        highlightedEl = target;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      const dots = tourSteps.map((_, i) =>
+        `<span class="${i === tourIndex ? 'active' : ''}"></span>`
+      ).join('');
+      const isLast = tourIndex === tourSteps.length - 1;
+
+      cardEl.innerHTML = `
+        <div class="tour-eyebrow">🤖 Site tour · ${tourIndex + 1} of ${tourSteps.length}</div>
+        <h3>${step.title}</h3>
+        <p>${step.text}</p>
+        <div class="tour-controls">
+          <div class="tour-dots">${dots}</div>
+          <div class="tour-buttons">
+            <button class="tour-skip" id="tourSkip">Skip</button>
+            <button class="tour-next" id="tourNext">${isLast ? 'Done' : 'Next'}</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('tourSkip').addEventListener('click', endTour);
+      document.getElementById('tourNext').addEventListener('click', () => {
+        if (isLast) { endTour(); return; }
+        tourIndex++;
+        renderStep();
+      });
+    }
+
+    function startTour() {
+      // If a tour is already open, ignore extra clicks so we don't stack
+      // multiple dark backdrops on top of each other.
+      if (backdropEl || cardEl) return;
+      tourIndex = 0;
+      backdropEl = document.createElement('div');
+      backdropEl.className = 'tour-backdrop';
+      backdropEl.addEventListener('click', endTour);
+      document.body.appendChild(backdropEl);
+
+      cardEl = document.createElement('div');
+      cardEl.className = 'tour-card';
+      document.body.appendChild(cardEl);
+
+      renderStep();
+    }
+
+    document.getElementById('tourFab').addEventListener('click', startTour);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && cardEl) endTour(); });
+
+    // Auto-run once for first-time visitors.
+    if (!localStorage.getItem('tourSeen')) {
+      startTour();
+    } else {
+      document.getElementById('tourFab').classList.remove('pulse');
+    }
+  </script>
 
 </body>
 </html>
